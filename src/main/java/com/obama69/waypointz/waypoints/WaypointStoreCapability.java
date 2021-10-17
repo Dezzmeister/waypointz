@@ -21,7 +21,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 public class WaypointStoreCapability {
-
 	public static final Capability<WaypointStore> WAYPOINT_STORE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 	
 	public static final Direction DEFAULT_FACING = null;
@@ -62,7 +61,17 @@ public class WaypointStoreCapability {
 			final Player ogPlayer = event.getOriginal();
 			final Player newPlayer = event.getPlayer();
 			
-			getWaypointStore(ogPlayer).ifPresent(oldStore -> getWaypointStore(newPlayer).ifPresent(newStore -> newStore.replaceWith(oldStore)));
+			if (!event.isWasDeath()) {
+				return;
+			}
+			
+			ogPlayer.reviveCaps();
+			
+			getWaypointStore(ogPlayer).ifPresent(oldStore -> {
+				getWaypointStore(newPlayer).ifPresent(newStore -> newStore.replaceWith(oldStore));
+			});
+			
+			ogPlayer.invalidateCaps();
 		}
 	}
 }
